@@ -53,6 +53,7 @@ namespace DatingApp.API
             services.AddMvc().AddJsonOptions(opt => {
                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
+            services.AddScoped<LogUserActivity>();
 
         }
 
