@@ -40,7 +40,7 @@ namespace DatingApp.API.Data
            return await _context.Messages.FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public Task<PagedList<Message>> GetMessageForUser(MessageParams messageParams)
+        public async Task<PagedList<Message>> GetMessageForUser(MessageParams messageParams)
         {
             var messages =  _context.Messages
                .Include(u => u.Sender).ThenInclude(p => p.Photos)
@@ -61,15 +61,23 @@ namespace DatingApp.API.Data
             }
 
             messages = messages.OrderByDescending(d => d.MessageSent);
-            return PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+            return await PagedList<Message>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
 
 
 
         }
 
-        public Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
+        public async Task<IEnumerable<Message>> GetMessageThread(int userId, int recipientId)
         {
-            throw new System.NotImplementedException();
+            var messages =  await _context.Messages
+               .Include(u => u.Sender).ThenInclude(p => p.Photos)
+               .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+               .Where (m => (m.RecipientId == userId && m.SenderId == recipientId)
+                || ( m.RecipientId == recipientId && m.SenderId == userId))
+               .OrderByDescending( m => m.MessageSent)
+               .ToListAsync();
+               return messages;
+
         }
 
         public async Task<Photo> GetPhoto(int id)
